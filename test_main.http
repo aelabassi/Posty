@@ -11,3 +11,16 @@ Accept: application/json
 ###
  GET http://127.0.0.1:8000/hello/Abderrazaq
 Accept: application/json
+
+
+###
+POST http://127.0.0.1:8000/posts/
+Content-Type: application/json
+
+{
+    "id": 1,
+    "title": "Hello",
+    "content": "some post",
+    "published": true,
+    "rating": 5
+}
