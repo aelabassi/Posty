@@ -9,7 +9,7 @@ class FileStorage:
     __file_path = "file.json"
     __objects = {}
 
-    def all(self, cls=None):
+    def all(self, cls=None) -> dict:
         """ Return all objects """
         if cls is not None:
             new_dict = {}

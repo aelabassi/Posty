@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+import uuid
 
 class Post(BaseModel):
     id: int
