@@ -4,6 +4,8 @@ from typing import Optional
 from models.posts import Post
 from models.engine.file_storage import FileStorage
 import uuid
+import psycopg2
+import os
 
 app = FastAPI()
 
@@ -15,6 +17,18 @@ def find_post(id):
         if post.id == id:
             return post
     return None
+
+HOST = os.getenv("DB_HOST")
+DATABASE = os.getenv("DB_NAME")
+USER = os.getenv("DB_USER")
+PASSWORD = os.getenv("DB_PASSWORD")
+try:
+    conn = psycopg2.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM posts")
+    print(cursor.fetchall())
+except (Exception, psycopg2.DatabaseError) as error:
+    print(error)
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
