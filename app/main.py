@@ -14,14 +14,7 @@ load_dotenv()
 
 app = FastAPI()
 
-file_storage = FileStorage()
 
-def find_post(id):
-    file_storage.reload()
-    for post in file_storage.all(Post).values():
-        if post.id == id:
-            return post
-    return None
 
 HOST = os.getenv("DB_HOST")
 DATABASE = os.getenv("DB_NAME")
@@ -45,48 +38,53 @@ async def root():
 
 @app.get("/posts/")
 async def get_posts():
-    file_storage.reload()
-    file_storage.all(Post)
-    return {"data": file_storage.all(Post)}
+    cursor.execute("""SELECT * FROM posts""")
+    posts = cursor.fetchall()
+    print(posts)
+    return {"data": posts}
 @app.post("/posts/", status_code=status.HTTP_201_CREATED)
 async def create_post(post: Post):
-    file_storage.new(post)
-    file_storage.save()
-    return {"id": post.id ,"title": post.title, "content": post.content}
+    cursor.execute(""" INSERT INTO posts (id, title, content, published) VALUES (%s, %s, %s, %s) RETURNING * """,
+                   (post.id, post.title, post.content, post.published))
+    new_post = cursor.fetchone()
+    conn.commit()
+    return {"data": new_post}
+
 
 
 @app.get("/posts/latest")
 async def get_latest_post():
-    file_storage.reload()
-    posts = file_storage.all(Post).values()
-    latest = max(posts, key=lambda post: post.id)
-    return {"data": latest}
+    pass
+
 @app.get("/posts/{post_id}")
-async def get_post(post_id: int, response: Response):
-    post = find_post(post_id)
-    if post is None:
-       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
-    return {"data": post}
+async def get_post(post_id: int):
+    cursor.execute(""" SELECT * FROM posts WHERE id = %s """, (post_id,))
+    post = cursor.fetchone()
+    if post:
+        return {"data": post}
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+
 
 @app.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(post_id: int):
-    post = find_post(post_id)
-    if post is None:
+    cursor.execute(""" DELETE FROM posts WHERE id = %s RETURNING * """, (post_id,))
+    deleted_post = cursor.fetchone()
+    conn.commit()
+    if deleted_post:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
-    file_storage.delete(post)
-    file_storage.save()
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
 
 
 @app.put("/posts/{post_id}")
 async def update_post(post_id: int, post: Post):
-    post = find_post(post_id)
-    if post is None:
+    cursor.execute(""" UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING * """, (post.title, post.content, post.published, post_id))
+    updated_post = cursor.fetchone()
+    conn.commit()
+    if updated_post:
+        return {"data": updated_post}
+    else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
-    post.title = post.title
-    post.content = post.content
-    post.published = post.published
-    post.rating = post.rating
-    file_storage.save()
-    return {"data": post}
 
