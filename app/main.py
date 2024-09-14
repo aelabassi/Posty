@@ -5,7 +5,12 @@ from models.posts import Post
 from models.engine.file_storage import FileStorage
 import uuid
 import psycopg2
+from psycopg2.extras import RealDictCursor
 import os
+from dotenv import load_dotenv
+import time
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -22,13 +27,17 @@ HOST = os.getenv("DB_HOST")
 DATABASE = os.getenv("DB_NAME")
 USER = os.getenv("DB_USER")
 PASSWORD = os.getenv("DB_PASSWORD")
-try:
-    conn = psycopg2.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM posts")
-    print(cursor.fetchall())
-except (Exception, psycopg2.DatabaseError) as error:
-    print(error)
+
+while True:
+    try:
+        conn = psycopg2.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD, cursor_factory=RealDictCursor)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM posts")
+        print(cursor.fetchall())
+        break
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        time.sleep(2)
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
