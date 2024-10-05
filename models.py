@@ -12,12 +12,3 @@ class Post(Base):
     content = Column(String(128), nullable=False)
     published = Column(Boolean, default=False, server_default='TRUE')
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-
-
-class PostResponse(BaseModel):
-    title: str
-    content: str
-    published: Optional[bool] = False
-
-    class Config:
-        from_attributes = True

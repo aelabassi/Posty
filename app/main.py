@@ -8,7 +8,7 @@ from starlette.status import HTTP_201_CREATED, HTTP_200_OK
 
 import models
 from models import Post
-from models import PostResponse
+from . import schema
 import db_storage
 from db_storage import engine, session
 from sqlalchemy.orm import Session
@@ -57,7 +57,7 @@ async def get_post(id: int, db: Session = Depends(get_db)):
 
 # Create a new post
 @app.post("/posts")
-async def create_post(post: PostResponse, db: Session = Depends(get_db)):
+async def create_post(post: schema.PostCreate, db: Session = Depends(get_db)):
     new_post = models.Post(**post.model_dump())
     db.add(new_post)
     db.commit()
@@ -70,9 +70,18 @@ async def get_post(id: int, db: Session = Depends(get_db)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if post is None:
         raise HTTPException(status_code=404, detail="Post not found")
-    return {"data": post}
+    return post
 
-
+@app.put("/posts/{id}", status_code=HTTP_200_OK)
+async def update_post(id: int, updated_post: schema.PostCreate, db: Session = Depends(get_db)):
+    new_post = db.query(models.Post).filter(models.Post.id == id)
+    post = new_post.first()
+    if post is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    new_post.update(updated_post.model_dump(), synchronize_session=False)
+    db.commit()
+    # db.refresh(new_post)
+    return new_post.first()
 
 
 
