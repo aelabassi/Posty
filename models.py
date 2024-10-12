@@ -1,8 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, TIMESTAMP, text
-from db_storage import Base
-from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime
+from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, text
+from app.db_storage import Base
+
 
 class Post(Base):
     __tablename__ = 'posts'
