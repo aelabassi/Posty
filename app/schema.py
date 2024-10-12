@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
 
 class PostBase(BaseModel):
     """ Base class for Post """
@@ -7,10 +8,16 @@ class PostBase(BaseModel):
     content: str
     published: Optional[bool] = False
 
-    class Config:
-        from_attributes = True
+
 
 
 
 class PostCreate(PostBase):
     pass
+
+class Post(PostBase):
+    id: int
+    created_at: Optional[datetime] = datetime.now()
+
+    class Config:
+        from_attributes = True
