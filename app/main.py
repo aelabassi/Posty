@@ -2,7 +2,7 @@ from fastapi import FastAPI, Response, status, HTTPException, Depends
 import os
 from typing import List
 from dotenv import load_dotenv
-import time
+from . import utils
 
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_204_NO_CONTENT
 
@@ -12,6 +12,8 @@ from . import schema
 import db_storage
 from db_storage import engine, session
 from sqlalchemy.orm import Session
+
+
 db_storage.Base.metadata.create_all(bind=engine)
 
 def get_db():
@@ -25,10 +27,7 @@ load_dotenv()
 
 app = FastAPI()
 
-@app.get("/sqlalchemy")
-def test_posts(db: Session = Depends(get_db)):
-    posts = db.query(models.Post).all()
-    return {"data":posts}
+
 
 HOST = os.getenv("DB_HOST")
 DATABASE = os.getenv("DB_NAME")
@@ -41,6 +40,8 @@ PASSWORD = os.getenv("DB_PASSWORD")
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+# path operations for posts
 
 # Get all posts
 @app.get("/posts", status_code=HTTP_200_OK, response_model=List[schema.Post])
@@ -94,5 +95,53 @@ async def delete_post(id: int, db: Session = Depends(get_db)):
     db.commit()
     return Response(status_code=HTTP_204_NO_CONTENT)
 
+
+# path operations for users
+
+# Get all users
+@app.get("/users", status_code=HTTP_200_OK, response_model=List[schema.User])
+async def get_users(db: Session = Depends(get_db)):
+    users = db.query(models.User).all()
+    return users
+
+# Get a user by id
+@app.get("/users/{id}", status_code=HTTP_200_OK, response_model=schema.User)
+async def get_user(id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+# Create a new user
+@app.post("/users", status_code=HTTP_201_CREATED, response_model=schema.User)
+async def create_user(user: schema.UserCreate, db: Session = Depends(get_db)):
+    # hash the password
+    user.password = utils.Hash(user.password)
+    new_user = models.User(**user.model_dump())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+# Update a user
+@app.put("/users/{id}", status_code=HTTP_200_OK, response_model=schema.User)
+async def update_user(id: int, updated_user: schema.UserCreate, db: Session = Depends(get_db)):
+    new_user = db.query(models.User).filter(models.User.id == id)
+    user = new_user.first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    new_user.update(updated_user.model_dump(), synchronize_session=False)
+    db.commit()
+    return new_user.first()
+
+# Delete a user
+@app.delete("/users/{id}", status_code=HTTP_200_OK, response_model=schema.User)
+async def delete_user(id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == id)
+    if user.first() is None:
+        raise HTTPException(status_code=404, detail=f"User with {id} not found")
+    user.delete(synchronize_session=False)
+    db.commit()
+    return Response(status_code=HTTP_204_NO_CONTENT)
 
 
