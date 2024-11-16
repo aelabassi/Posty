@@ -45,3 +45,15 @@ class User(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class Token(BaseModel):
+    token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    user_id: Optional[int] = None
