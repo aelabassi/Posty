@@ -2,7 +2,7 @@ from .. import oauth2
 from .. import schema
 from ..db_storage import get_db
 from fastapi import Response, HTTPException, Depends, APIRouter
-from typing import List
+from typing import List, Optional
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_204_NO_CONTENT
 from sqlalchemy.orm import Session
 import models
@@ -16,8 +16,9 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 # Get all posts
 @router.get("/", status_code=HTTP_200_OK, response_model=List[schema.Post])
 async def get_posts(db: Session = Depends(get_db),
-                    current_user: models.User = Depends(oauth2.get_current_user)):
-    posts = db.query(models.Post).filter(models.Post.user_id == current_user.id).all()
+                    current_user: models.User = Depends(oauth2.get_current_user)
+                    , limit: int = 10, offset: int = 0, search: Optional[str] = None):
+    posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(offset).all()
     return posts
 # Get by a post by id
 @router.get("/{id}", status_code=HTTP_200_OK, response_model=schema.Post)
