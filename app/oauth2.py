@@ -1,5 +1,6 @@
 from jose import JWSError, jwt
 from datetime import datetime, timedelta
+import os
 from . import schema, db_storage
 import models
 from fastapi import Depends, HTTPException, status
@@ -11,7 +12,7 @@ oath2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 # Algorithm for encoding and decoding JWT tokens
 # Token expiration time
 
-SECRET_KEY = "0d8e7b1b-4b7b-4b7b-8b7b-4b7b4b7b4b7b"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 EXPIRATION_TIME_MINUTE = 30
 
