@@ -10,13 +10,13 @@ router = APIRouter(prefix="/users", tags=["Users"])
 # CRUD operations for users
 
 # Get all users
-@router.get("/", status_code=HTTP_200_OK, response_model=List[schema.User])
+@router.get("/", status_code=HTTP_200_OK, response_model=List[schema.UserOut])
 async def get_users(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
     return users
 
 # Get a user by id
-@router.get("/{id}", status_code=HTTP_200_OK, response_model=schema.User)
+@router.get("/{id}", status_code=HTTP_200_OK, response_model=schema.UserOut)
 async def get_user(id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == id).first()
     if user is None:
@@ -24,7 +24,7 @@ async def get_user(id: int, db: Session = Depends(get_db)):
     return user
 
 # Create a new user
-@router.post("/", status_code=HTTP_201_CREATED, response_model=schema.User)
+@router.post("/", status_code=HTTP_201_CREATED, response_model=schema.UserOut)
 async def create_user(user: schema.UserCreate, db: Session = Depends(get_db)):
     # hash the password
     user.password = utils.Hash(user.password)
@@ -35,7 +35,7 @@ async def create_user(user: schema.UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 # Update a user
-@router.put("/{id}", status_code=HTTP_200_OK, response_model=schema.User)
+@router.put("/{id}", status_code=HTTP_200_OK, response_model=schema.UserOut)
 async def update_user(id: int, updated_user: schema.UserCreate, db: Session = Depends(get_db)):
     new_user = db.query(models.User).filter(models.User.id == id)
     user = new_user.first()
@@ -46,7 +46,7 @@ async def update_user(id: int, updated_user: schema.UserCreate, db: Session = De
     return new_user.first()
 
 # Delete a user
-@router.delete("/{id}", status_code=HTTP_200_OK, response_model=schema.User)
+@router.delete("/{id}", status_code=HTTP_200_OK, response_model=schema.UserOut)
 async def delete_user(id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == id)
     if user.first() is None:
