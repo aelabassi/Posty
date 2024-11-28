@@ -1,6 +1,5 @@
 from jose import JWSError, jwt
 from datetime import datetime, timedelta
-import os
 from . import schema, db_storage
 import models
 from fastapi import Depends, HTTPException, status

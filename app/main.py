@@ -11,13 +11,6 @@ load_dotenv()
 
 app = FastAPI()
 
-
-
-HOST = os.getenv("DB_HOST")
-DATABASE = os.getenv("DB_NAME")
-USER = os.getenv("DB_USER")
-PASSWORD = os.getenv("DB_PASSWORD")
-
 # include post router
 app.include_router(user.router)
 
