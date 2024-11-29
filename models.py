@@ -25,3 +25,14 @@ class User(Base):
     username = Column(String(128), nullable=False, unique=True)
     email = Column(String(128), nullable=False)
     password = Column(String(128), nullable=False)
+
+
+class Vote(Base):
+    __tablename__ = 'votes'
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    post_id = Column(Integer, ForeignKey('posts.id', ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
+    # value = Column(Integer, nullable=False)
+    # post = relationship('Post')
+    # user = relationship('User')
