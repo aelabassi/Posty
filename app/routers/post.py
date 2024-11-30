@@ -19,9 +19,13 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 async def get_posts(db: Session = Depends(get_db),
                     current_user: models.User = Depends(oauth2.get_current_user)
                     , limit: int = 1, offset: int = 0, search: Optional[str] = ''):
-    posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(offset).all()
     result = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).outerjoin(
-        models.Vote, models.Vote.post_id == models.Post.id).group_by(models.Post.id).all()
+        models.Vote, models.Vote.post_id == models.Post.id).group_by(
+        models.Post.id).filter(
+        models.Post.title.contains(
+            search)).limit(
+        limit).offset(
+        offset).all()
     # print(result)
     sterilized_posts = [
         {
@@ -32,13 +36,17 @@ async def get_posts(db: Session = Depends(get_db),
     ]
     return sterilized_posts
 # Get by a post by id
-@router.get("/{id}", status_code=HTTP_200_OK, response_model=schema.Post)
+@router.get("/{id}", status_code=HTTP_200_OK, response_model=schema.PostVote)
 async def get_post(id: int, db: Session = Depends(get_db),
                    current_user: models.User = Depends(oauth2.get_current_user)):
-    post = db.query(models.Post).filter(models.Post.id == id).first()
+    post = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).outerjoin(
+        models.Vote, models.Vote.post_id == models.Post.id).group_by(
+            models.Post.id).filter(models.Post.id == id).first()
+    # print(post)
     if post is None:
         raise HTTPException(status_code=404, detail="Post not found")
-    return post
+
+    return {"post": post[0], "votes": post[1]}
 
 # Create a new post
 @router.post("/", status_code=HTTP_201_CREATED, response_model=schema.Post)
