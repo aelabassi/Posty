@@ -18,6 +18,9 @@ router = APIRouter(
 @router.post('/', status_code=status.HTTP_201_CREATED)
 def vote(vote: Vote, db: Session = Depends(get_db), current_user: Any = Depends(get_current_user)):
     """ Vote on a post """
+    post = db.query(models.Post).filter(models.Post.id == vote.post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail=f"Post {vote.post_id} not found")
     vote_query = db.query(models.Vote).filter(models.Vote.post_id == vote.post_id,
                                               models.Vote.user_id == current_user.id)
     voted = vote_query.first()

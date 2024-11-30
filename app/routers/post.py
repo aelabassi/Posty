@@ -5,6 +5,7 @@ from fastapi import Response, HTTPException, Depends, APIRouter
 from typing import List, Optional
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_204_NO_CONTENT
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 import models
 
 
@@ -14,12 +15,22 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 # CRUD operations for posts
 
 # Get all posts
-@router.get("/", status_code=HTTP_200_OK, response_model=List[schema.Post])
+@router.get("/", status_code=HTTP_200_OK, response_model=List[schema.PostVote])
 async def get_posts(db: Session = Depends(get_db),
                     current_user: models.User = Depends(oauth2.get_current_user)
-                    , limit: int = 10, offset: int = 0, search: Optional[str] = None):
+                    , limit: int = 1, offset: int = 0, search: Optional[str] = ''):
     posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(offset).all()
-    return posts
+    result = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).outerjoin(
+        models.Vote, models.Vote.post_id == models.Post.id).group_by(models.Post.id).all()
+    # print(result)
+    sterilized_posts = [
+        {
+            "post": post,
+            "votes": votes
+        }
+        for post, votes in result
+    ]
+    return sterilized_posts
 # Get by a post by id
 @router.get("/{id}", status_code=HTTP_200_OK, response_model=schema.Post)
 async def get_post(id: int, db: Session = Depends(get_db),

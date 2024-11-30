@@ -60,6 +60,11 @@ class Vote(BaseModel):
     class Config:
         from_attributes = True
 
+
+class PostVote(BaseModel):
+    post: Post
+    votes: int
+
 class Token(BaseModel):
     token: str
     token_type: str
