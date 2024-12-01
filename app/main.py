@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-import os
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from . import db_storage
 from app.db_storage import engine
@@ -10,6 +10,15 @@ db_storage.Base.metadata.create_all(bind=engine)
 load_dotenv()
 
 app = FastAPI()
+# CORS
+# origins = ["https://google.com"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # include post router
 app.include_router(user.router)
