@@ -1,6 +1,6 @@
 import json
 import os
-from models.posts import Post
+from models import Post
 classes = {"Post": Post}
 
 class FileStorage:
