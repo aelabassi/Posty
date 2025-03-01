@@ -26,7 +26,7 @@ def vote(vote: Vote, db: Session = Depends(get_db), current_user: Any = Depends(
     voted = vote_query.first()
     if vote.dir == 1:
         if voted:
-            raise HTTPException(status_code=400,
+            raise HTTPException(status_code=409,
                                 detail=f"User {current_user.id} has already voted on post {vote.post_id}")
         new_vote = models.Vote(post_id=vote.post_id, user_id=current_user.id)
         db.add(new_vote)
@@ -34,7 +34,7 @@ def vote(vote: Vote, db: Session = Depends(get_db), current_user: Any = Depends(
         return {"message": "Vote created successfully"}
     else:
         if not voted:
-            raise HTTPException(status_code=400,
+            raise HTTPException(status_code=404,
                                 detail=f"User {current_user.id} has not voted on post {vote.post_id}")
         vote_query.delete(synchronize_session=False)
         db.commit()
