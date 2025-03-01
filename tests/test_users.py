@@ -1,24 +1,25 @@
-from app.schema import UserOut, Token
+from app.schema import Token
 from app.config import settings
-from database import client, session
-import pytest
 from jose import jwt
-
-@pytest.fixture
-def test_user(client):
-    user_data = {"username": "Robin", "email":"Damian.wyne@batfam.inc", "password":"kingrobin"}
-    res = client.post('/users/', json=user_data)
-    new_user = res.json()
-    new_user["password"] = user_data["password"]
-    return new_user
-
+import pytest
 
 # login
 def test_login(client, test_user):
-    res = client.post('/login', data={"username":test_user["email"], "password":test_user["password"]})
+    res = client.post('/login', data={"username": test_user["email"], "password": test_user["password"]})
     token = Token(**res.json())
     payload = jwt.decode(token.token, settings.secret_key, settings.algorithm)
     id_ = payload["user_id"]
     assert id_ == test_user["id"]
     assert res.json().get("token") == token.token
     assert res.json().get("token_type") == token.token_type
+
+@pytest.mark.parametrize("email, password, status_code", [
+    ("wrongemail@gmail.com", "kingrobin", 403),
+    ("Damian.wyne@batfam.inc", "wrongpassord", 403),
+    ("stephanie.brown@batfam.inc", "Steph", 403),
+    (None, "password123", 422),
+    ("Cassandra.kane@batfam.inc", None, 422)
+])
+def test_incorrect_login(client, test_user, email, password, status_code):
+    res = client.post("/login", data={"username": email, "password":password})
+    assert res.status_code == status_code

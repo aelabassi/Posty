@@ -17,7 +17,7 @@ engine = create_engine(SQLALCHEMY_DB_URL)
 TestSession = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
-# tests
+
 # fixtures
 @pytest.fixture
 def session():
@@ -40,3 +40,12 @@ def client(session):
 
     app.dependency_overrides = {get_db: override_get_db}
     yield TestClient(app)
+
+# user fixtures
+@pytest.fixture
+def test_user(client):
+    user_data = {"username": "Robin", "email":"Damian.wyne@batfam.inc", "password":"kingrobin"}
+    res = client.post('/users/', json=user_data)
+    new_user = res.json()
+    new_user["password"] = user_data["password"]
+    return new_user
