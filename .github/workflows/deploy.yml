@@ -27,6 +27,7 @@ jobs:
       postgres:
         image: postgres
         env:
+          POSTGRES_USER: ${{secrets.DB_USER}}
           POSTGRES_PASSWORD: ${{secrets.DB_PASSWORD}}
           POSTGRES_DB: ${{secrets.DB_NAME}}
         ports:
@@ -41,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: pull the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: install python 3.9
         uses: actions/setup-python@v2
         with:
