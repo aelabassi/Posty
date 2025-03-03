@@ -8,6 +8,34 @@ on:
 
 jobs:
   job1:
+    environment:
+      name: testing
+    env:
+      DB_URL: ${{secrets.DB_URL}}
+      DB_HOST: ${{secrets.DB_HOST}}
+      DB_NAME: ${{secrets.DB_NAME}}
+      DB_USER: ${{secrets.DB_USER}}
+      DB_PASSWORD: ${{secrets.DB_PASSWORD}}
+      ALGORITHM: ${{secrets.ALGORITHM}}
+      SECRET_KEY: ${{secrets.SECRET_KEY}}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
+
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ${{secrets.DB_PASSWORD}}
+          POSTGRES_NAME: ${{secrets.DB_NAME}}_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+
     runs-on: ubuntu-latest
     steps:
       - name: pull the repo
