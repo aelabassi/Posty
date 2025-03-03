@@ -5,9 +5,9 @@ from . import db_storage
 from app.db_storage import engine
 from .routers import user, post, auth, vote
 
-
-db_storage.Base.metadata.create_all(bind=engine)
 load_dotenv()
+db_storage.Base.metadata.create_all(bind=engine)
+
 
 app = FastAPI()
 # CORS
