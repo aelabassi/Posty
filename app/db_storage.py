@@ -1,3 +1,4 @@
+"""Initiate the Postgres database engine"""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -12,6 +13,10 @@ session = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 
 def get_db():
+    """Initiates the database session
+    Returns:
+        Generator[Session, Any, None]: next session
+    """
     db = session()
     try:
         yield db

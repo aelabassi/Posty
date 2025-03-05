@@ -1,3 +1,6 @@
+"""
+Oauth2 Module: Authentication using JWT tokens
+"""
 from jose import JWSError, jwt
 from datetime import datetime, timedelta
 from . import schema, db_storage
@@ -18,7 +21,12 @@ EXPIRATION_TIME_MINUTE = settings.access_token_expire_minutes
 
 
 def create_access_token(data: dict):
-    """ Create a new access token """
+    """ Create a new access token
+     Args:
+         data: (dict) data to encode
+     Returns:
+         (str): JWT string
+    """
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=EXPIRATION_TIME_MINUTE)
     to_encode.update({"exp": expire})
@@ -27,7 +35,15 @@ def create_access_token(data: dict):
 
 
 def verify_access_token(token:str, credentials_exception: Exception):
-    """ Verify the access token """
+    """ Verify the access token
+     Args:
+         token (str): Access token
+         credentials_exception (Exception): Exception to raise
+    Returns:
+        (TokenData):  the token schema
+    Raises:
+        credentials_exception: when JWSError
+    """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
@@ -39,7 +55,13 @@ def verify_access_token(token:str, credentials_exception: Exception):
     return token_data
 
 def get_current_user(token: str = Depends(oath2_scheme), db: Session = Depends(db_storage.get_db)):
-    """ Get the current user """
+    """ Get the current user
+    Args:
+        token (str): Access token depends on oath2_scheme
+        db: the database session depends on get_db
+    Returns:
+         user (Query | Any): filtered user
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

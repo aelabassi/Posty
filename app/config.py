@@ -1,3 +1,4 @@
+"""Load environment variables using pydantic_settings"""
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):

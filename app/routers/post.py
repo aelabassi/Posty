@@ -1,3 +1,4 @@
+""" Post route """
 from .. import oauth2
 from .. import schema
 from ..db_storage import get_db
@@ -8,7 +9,7 @@ from sqlalchemy import func
 import models
 
 
-
+# initiate the post route
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
 # CRUD operations for posts
@@ -18,6 +19,16 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 async def get_posts(db: Session = Depends(get_db),
                     current_user: models.User = Depends(oauth2.get_current_user)
                     , limit: int = 1, offset: int = 0, search: Optional[str] = ''):
+    """Get all posts
+    Args:
+        db: (Session) the database session
+        current_user: (User) the current authorized user
+        limit: (int) the number of posts to return
+        offset: (int) the number of posts to skip
+        search: (Optional[str]) searched post by regex pattern
+    Returns:
+        (List[Dict[str, PostVote]]): voted posts
+    """
     result = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).outerjoin(
         models.Vote, models.Vote.post_id == models.Post.id).group_by(
         models.Post.id).filter(
@@ -38,6 +49,16 @@ async def get_posts(db: Session = Depends(get_db),
 @router.get("/{id}", status_code=status.HTTP_200_OK, response_model=schema.PostVote)
 async def get_post(id: int, db: Session = Depends(get_db),
                    current_user: models.User = Depends(oauth2.get_current_user)):
+    """ Get a post by id
+    Args:
+        id: (int) user's id
+        db: (Session) the database session
+        current_user: (User) the current authorized user
+    Returns:
+        Dict[str, PostVote]: voted post
+    Raises:
+        HTTPException: when no post is found
+    """
     post = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).outerjoin(
         models.Vote, models.Vote.post_id == models.Post.id).group_by(
             models.Post.id).filter(models.Post.id == id).first()

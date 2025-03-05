@@ -6,7 +6,7 @@ import models
 
 # Posts
 class PostBase(BaseModel):
-    """ Base class for Post """
+    """ Base class for Post"""
     title: str
     content: str
     published: Optional[bool] = False
@@ -21,10 +21,12 @@ class UserBase(BaseModel):
     password: str
 
 class UserCreate(UserBase):
+    """Response model at login request"""
     email: EmailStr
     password: str
 
 class UserOut(BaseModel):
+    "Response model at login response"
     id: int
     username: str
     email: EmailStr

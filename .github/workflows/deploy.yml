@@ -91,6 +91,7 @@ jobs:
       - name: pull the repo
         uses: actions/checkout@v4
       - name: deploying to Heroku
+        continue-on-error: true
         uses: akhileshns/heroku-deploy@v3.14.15
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
